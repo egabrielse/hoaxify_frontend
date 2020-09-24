@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import * as serviceWorker from './serviceWorker';
+import {UserSignUpPage} from './pages/UserSignUpPage'
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <UserSignUpPage />
   </React.StrictMode>,
   document.getElementById('root')
 );
