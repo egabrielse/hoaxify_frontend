@@ -1,63 +1,63 @@
 import React from 'react';
-import { render, fireEvent, waitFor, screen, queryByPlaceholderText } from '@testing-library/react';
+import { render, fireEvent, waitForDomChange} from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import {UserSignUpPage} from './UserSignUpPage';
+import {UserSignupPage} from './UserSignupPage';
 import { act } from 'react-dom/test-utils';
 
 describe("UserSignUpPage", () => {
 
     describe('Layout', () => {
-        // Tests to ensure that all desired components are present in the UserSignUpPage component:
+        // Tests to ensure that all desired components are present in the UserSignupPage component:
         test('has header of Sign Up', () => {
-            const {container} = render(<UserSignUpPage />);
+            const {container} = render(<UserSignupPage />);
             const header = container.querySelector('h1');
             expect(header).toHaveTextContent("Sign Up");
         });
 
-        test('has input for display name', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+        test('has input for displayName', () => {
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const displayNameInput = queryByPlaceholderText("Display Name...");
             expect(displayNameInput).toBeInTheDocument(); 
         });
 
-        test('has input for email', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
-            const emailInput = queryByPlaceholderText("Email...");
-            expect(emailInput).toBeInTheDocument(); 
+        test('has input for username', () => {
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
+            const usernameInput = queryByPlaceholderText("Username...");
+            expect(usernameInput).toBeInTheDocument(); 
         });
 
         test('has input for password', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const passwordInput = queryByPlaceholderText("Password...");
             expect(passwordInput).toBeInTheDocument(); 
         });
 
         test('has input type for password to be password', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const passwordInput = queryByPlaceholderText("Password...");
             expect(passwordInput.type).toBe('password'); 
         });
 
         test('has input for password confirmation', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const confirmInput = queryByPlaceholderText("Confirm Password...");
             expect(confirmInput).toBeInTheDocument(); 
         });
 
         test('has input type for password confirmation to be password', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const confirmInput = queryByPlaceholderText("Confirm Password...");
             expect(confirmInput.type).toBe('password'); 
         });
 
         test('has submit button', () => {
-            const {container} = render(<UserSignUpPage/>);
+            const {container} = render(<UserSignupPage/>);
             const submitButton = container.querySelector('button');
             expect(submitButton).toBeInTheDocument(); 
         });
 
         test('has submit button with text of Submit', () => {
-            const {container} = render(<UserSignUpPage/>);
+            const {container} = render(<UserSignupPage/>);
             const submitButton = container.querySelector('button');
             expect(submitButton).toHaveTextContent("Submit");
         });
@@ -76,49 +76,73 @@ describe("UserSignUpPage", () => {
             }
         }
 
-        let button, displayNameInput, emailInput, passwordInput, confirmInput;
+        const mockAsyncDelayedSuccess = () => {
+            return jest.fn().mockImplementation(() => {
+                return new Promise((resolve,reject)  => {
+                    setTimeout(() => {
+                        return resolve({});
+                    }, 300);
+                });
+            })
+        }
+
+        const mockAsyncDelayedFailure = () => {
+            return jest.fn().mockImplementation(() => {
+                return new Promise((resolve,reject)  => {
+                    setTimeout(() => {
+                        return reject({
+                            response: {data:{}}
+                        });
+                    }, 300);
+                });
+            })
+        }
+
+        let button, displayNameInput, usernameInput, passwordInput, confirmInput;
 
         const setupForSubmit = (props) => {
             const rendered = render(
-                <UserSignUpPage {...props}/>
+                <UserSignupPage {...props}/>
             );
 
             const {container, queryByPlaceholderText} = rendered;
 
             displayNameInput = queryByPlaceholderText("Display Name...");
-            emailInput = queryByPlaceholderText("Email...");
+            usernameInput = queryByPlaceholderText("Username...");
             passwordInput = queryByPlaceholderText("Password...");
             confirmInput = queryByPlaceholderText("Confirm Password...");
 
-            fireEvent.change(displayNameInput, changeEvent("test-display-name"));
-            fireEvent.change(emailInput, changeEvent("test-email"));
+            fireEvent.change(displayNameInput, changeEvent("test-displayName"));
+            fireEvent.change(usernameInput, changeEvent("test-username"));
             fireEvent.change(passwordInput, changeEvent("test-password"));
             fireEvent.change(confirmInput, changeEvent("test-password"));
 
             button = container.querySelector('button');
+
+            return rendered;
         }
         
         // Tests to ensure that state is changed by user input:
         test('user input sets the state.displayName', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const displayNameInput = queryByPlaceholderText("Display Name...");
 
-            fireEvent.change(displayNameInput, changeEvent('test-display-name'));
+            fireEvent.change(displayNameInput, changeEvent('test-displayName'));
 
-            expect(displayNameInput).toHaveValue('test-display-name');
+            expect(displayNameInput).toHaveValue('test-displayName');
         });
 
-        test('user input sets the state.email', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
-            const emailInput = queryByPlaceholderText("Email...");
+        test('user input sets the state.username', () => {
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
+            const usernameInput = queryByPlaceholderText("Username...");
 
-            fireEvent.change(emailInput, changeEvent('test-email'));
+            fireEvent.change(usernameInput, changeEvent('test-username'));
 
-            expect(emailInput).toHaveValue('test-email');
+            expect(usernameInput).toHaveValue('test-username');
         });
 
         test('user input sets the state.password', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const passwordInput = queryByPlaceholderText("Password...");
 
             fireEvent.change(passwordInput, changeEvent('test-password'));
@@ -127,7 +151,7 @@ describe("UserSignUpPage", () => {
         });
 
         test('user input sets the state.confirm', () => {
-            const {queryByPlaceholderText} = render(<UserSignUpPage/>);
+            const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const confirmInput = queryByPlaceholderText("Confirm Password...");
 
             fireEvent.change(confirmInput, changeEvent('test-password'));
@@ -135,37 +159,86 @@ describe("UserSignUpPage", () => {
             expect(confirmInput).toHaveValue('test-password');
         });
 
-        test('postSignUp does not throw exception when clicking the button when actions are not provided through props', () => {
+        test('calls postSignup when the fields are valid and the actions are provided in props', () => {
             const actions = {
-                postSignUp: jest.fn().mockResolvedValueOnce({})
-            }
-            setupForSubmit({actions});
-
+                postSignup: jest.fn().mockResolvedValueOnce({})
+            };
+            setupForSubmit({ actions });
             fireEvent.click(button);
-            expect(() => fireEvent.click(button)).not.toThrow();
+            expect(actions.postSignup).toHaveBeenCalledTimes(1);
         });
 
-        test('postSignUp does not throw exception when clicking the button when actions are not provided through props', () => {
+        test('does not throw exception when clicking the button when actions are not provided through props', () => {
             setupForSubmit();
-
-            fireEvent.click(button);
             expect(() => fireEvent.click(button)).not.toThrow();
         });
 
-        test('postSignUp does not throw exception when clicking the button when actions are not provided through props', () => {
+        test('calls post with user body when the fields are valid', () => {
             const actions = {
-                postSignUp: jest.fn().mockResolvedValueOnce({})
-            }
-            setupForSubmit({actions});
+                postSignup: jest.fn().mockResolvedValueOnce({})
+            };
+            setupForSubmit({ actions });
+            fireEvent.click(button);
+            const expectedUserObject = {
+                displayName: 'test-displayName',
+                username: 'test-username',
+                password: 'test-password'
+            };
+            expect(actions.postSignup).toHaveBeenCalledWith(expectedUserObject);
+        });
+
+        test('does not allow user to click submit button when there is an ongoing api call', () => {
+            const actions = {
+                postSignup: mockAsyncDelayedSuccess()
+            };
+            setupForSubmit({ actions });
+
+            fireEvent.click(button);
             fireEvent.click(button);
 
             const expectedUserObject = {
-                email: 'test-email',
-                password: 'test-password',
-                displayName: 'test-display-name'
-            }
+                displayName: 'test-displayName',
+                username: 'test-username',
+                password: 'test-password'
+            };
+            expect(actions.postSignup).toHaveBeenCalledTimes(1);
+        });
 
-            expect(actions.postSignUp).toHaveBeenCalledWith(expectedUserObject);
+        test('diplays spinner when there is an ongoing api call', () => {
+            const actions = {
+                postSignup: mockAsyncDelayedSuccess()
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+
+            const spinner = queryByText('Loading...');
+            expect(spinner).toBeInTheDocument();
+        });
+
+        test('hides spinner after api call finishes successfully', async () => {
+            const actions = {
+                postSignup: mockAsyncDelayedSuccess()
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+
+            await waitForDomChange();
+
+            const spinner = queryByText('Loading...');
+            expect(spinner).not.toBeInTheDocument();
+        });
+
+        test('hides spinner after api call finishes with error', async () => {
+            const actions = {
+                postSignup: mockAsyncDelayedFailure()
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+
+            await waitForDomChange();
+
+            const spinner = queryByText('Loading...');
+            expect(spinner).not.toBeInTheDocument();
         });
     });
 });

@@ -1,16 +1,17 @@
 import React from 'react';
 
 
-export class UserSignUpPage extends React.Component {
+export class UserSignupPage extends React.Component {
 
     constructor(props) {
         super(props);
         
         this.state = {
             displayName:'',
-            email:'',
+            username:'',
             password:'',
             confirm:'',
+            pendingApiCall: false
         }
     };
 
@@ -18,9 +19,9 @@ export class UserSignUpPage extends React.Component {
         const value = event.target.value; 
         this.setState({displayName: value})
     }
-    onChangeEmail = (event) => {
+    onChangeUsername = (event) => {
         const value = event.target.value; 
-        this.setState({email: value})
+        this.setState({username: value})
     }
     onChangePassword = (event) => {
         const value = event.target.value; 
@@ -30,13 +31,20 @@ export class UserSignUpPage extends React.Component {
         const value = event.target.value; 
         this.setState({confirm: value})
     }
-    onClickSignUp = () => {
+    onClickSignup = () => {
         const user = {
-            email: this.state.email,
+            displayName: this.state.displayName,
+            username: this.state.username,
             password: this.state.password,
-            displayName: this.state.displayName
         }
-        this.props.actions.postSignUp(user);
+        this.setState({pendingApiCall:true});
+        this.props.actions.postSignup(user)
+        .then((response) => {
+            this.setState({pendingApiCall:false});
+        })
+        .catch((error) => {
+            this.setState({pendingApiCall:false});
+        });
     }
 
 
@@ -57,9 +65,9 @@ export class UserSignUpPage extends React.Component {
                 <div className='col-12 mb-3'>
                     <input 
                         className='form-control'
-                        placeholder='Email...'
-                        value={this.state.email}
-                        onChange={this.onChangeEmail}
+                        placeholder='Username...'
+                        value={this.state.username}
+                        onChange={this.onChangeUsername}
                     />
                 </div>
 
@@ -84,7 +92,18 @@ export class UserSignUpPage extends React.Component {
                 </div>
 
                 <div className='text-center'>
-                    <button className='btn btn-primary' onClick={this.onClickSignUp}>Submit</button>
+                    <button
+                        className='btn btn-primary'
+                        onClick={this.onClickSignup}
+                        disabled={this.state.pendingApiCall}
+                    >
+                        {this.state.pendingApiCall && 
+                            (<div className="spinner-border text-light spinner-border-sm mr-sm-1" role="status">
+                                <span className="sr-only">Loading...</span>
+                            </div>)
+                        }
+                        Submit
+                    </button>
                 </div>  
     
             </div>
@@ -92,10 +111,10 @@ export class UserSignUpPage extends React.Component {
     }
 }
 
-UserSignUpPage.defaultProps = {
+UserSignupPage.defaultProps = {
     actions: {
-        postSignUp: () => {
-            new Promise((resolve, reject) => {
+        postSignup: () => {
+            return new Promise((resolve, reject) => {
                 resolve({});
             })
         }
