@@ -1,8 +1,6 @@
 import React from 'react';
-import { render, fireEvent, waitForDomChange} from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import { render, fireEvent, waitForDomChange, waitForElement} from '@testing-library/react';
 import {UserSignupPage} from './UserSignupPage';
-import { act } from 'react-dom/test-utils';
 
 describe("UserSignUpPage", () => {
 
@@ -114,8 +112,8 @@ describe("UserSignUpPage", () => {
 
             fireEvent.change(displayNameInput, changeEvent("test-displayName"));
             fireEvent.change(usernameInput, changeEvent("test-username"));
-            fireEvent.change(passwordInput, changeEvent("test-password"));
-            fireEvent.change(confirmInput, changeEvent("test-password"));
+            fireEvent.change(passwordInput, changeEvent("test-P4ssword"));
+            fireEvent.change(confirmInput, changeEvent("test-P4ssword"));
 
             button = container.querySelector('button');
 
@@ -145,18 +143,18 @@ describe("UserSignUpPage", () => {
             const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const passwordInput = queryByPlaceholderText("Password...");
 
-            fireEvent.change(passwordInput, changeEvent('test-password'));
+            fireEvent.change(passwordInput, changeEvent('test-P4ssword'));
 
-            expect(passwordInput).toHaveValue('test-password');
+            expect(passwordInput).toHaveValue('test-P4ssword');
         });
 
         test('user input sets the state.confirm', () => {
             const {queryByPlaceholderText} = render(<UserSignupPage/>);
             const confirmInput = queryByPlaceholderText("Confirm Password...");
 
-            fireEvent.change(confirmInput, changeEvent('test-password'));
+            fireEvent.change(confirmInput, changeEvent('test-P4ssword'));
 
-            expect(confirmInput).toHaveValue('test-password');
+            expect(confirmInput).toHaveValue('test-P4ssword');
         });
 
         test('calls postSignup when the fields are valid and the actions are provided in props', () => {
@@ -182,7 +180,7 @@ describe("UserSignUpPage", () => {
             const expectedUserObject = {
                 displayName: 'test-displayName',
                 username: 'test-username',
-                password: 'test-password'
+                password: 'test-P4ssword'
             };
             expect(actions.postSignup).toHaveBeenCalledWith(expectedUserObject);
         });
@@ -199,7 +197,7 @@ describe("UserSignUpPage", () => {
             const expectedUserObject = {
                 displayName: 'test-displayName',
                 username: 'test-username',
-                password: 'test-password'
+                password: 'test-P4ssword'
             };
             expect(actions.postSignup).toHaveBeenCalledTimes(1);
         });
@@ -239,6 +237,117 @@ describe("UserSignUpPage", () => {
 
             const spinner = queryByText('Loading...');
             expect(spinner).not.toBeInTheDocument();
+        });
+
+        test('displays validation error for displayName when error is received for the field', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ displayName: 'size must be between 4 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            const errorMessage = await waitForElement(() => queryByText('size must be between 4 and 255'));
+            expect(errorMessage).toBeInTheDocument();
+        });
+
+        test('displays validation error for username when error is received for the field', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ username: 'size must be between 4 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            const errorMessage = await waitForElement(() => queryByText('size must be between 4 and 255'));
+            expect(errorMessage).toBeInTheDocument();
+        });
+
+        test('enables the submit button when password and confirm have the same value', () => {
+            setupForSubmit();
+            expect(button).not.toBeDisabled();
+        })
+
+        test('disables the submit button when confirm does not match password', () => {
+            setupForSubmit();
+            fireEvent.change(confirmInput, changeEvent("new-pass"));
+            expect(button).toBeDisabled();
+        })
+
+        test('disables the submit button when password does not match confirms', () => {
+            setupForSubmit();
+            fireEvent.change(passwordInput, changeEvent("new-pass"));
+            expect(button).toBeDisabled();
+        })
+
+        test('displays error style for confirm password when there is a mismatch', () => {
+            const {queryByText} = setupForSubmit();
+            fireEvent.change(confirmInput, changeEvent("new-pass"));
+            const mismatchWarning = queryByText("Does not match password");
+            expect(mismatchWarning).toBeInTheDocument();
+        })
+
+        test('displays error style for confirm password when ...', () => {
+            const {queryByText} = setupForSubmit();
+            fireEvent.change(passwordInput, changeEvent("new-pass"));
+            const mismatchWarning = queryByText("Does not match password");
+            expect(mismatchWarning).toBeInTheDocument();
+        })
+
+        test('hides the validation error when user changes the content of displayName', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ displayName: 'size must be between 4 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            await waitForElement(() => queryByText('size must be between 4 and 255'));
+            fireEvent.change(displayNameInput, changeEvent("displayName updated"));
+            const errorMessage = queryByText('size must be between 4 and 255');
+            expect(errorMessage).not.toBeInTheDocument();
+        });
+
+        test('hides the validation error when user changes the content of username', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ username: 'size must be between 4 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            await waitForElement(() => queryByText('size must be between 4 and 255'));
+            fireEvent.change(usernameInput, changeEvent("username updated"));
+            const errorMessage = queryByText('size must be between 4 and 255');
+            expect(errorMessage).not.toBeInTheDocument();
+        });
+
+        test('hides the validation error when user changes the content of password', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ password: 'size must be between 8 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            await waitForElement(() => queryByText('size must be between 8 and 255'));
+            fireEvent.change(passwordInput, changeEvent("password updated"));
+            const errorMessage = queryByText('size must be between 8 and 255');
+            expect(errorMessage).not.toBeInTheDocument();
+        });
+
+        test('hides the validation error when user changes the content of confirm', async () => {
+            const actions = {
+                postSignup: jest.fn().mockRejectedValue({
+                    response:{ data: { validationErrors:{ confirm: 'size must be between 4 and 255'}}}
+                })
+            };
+            const {queryByText} = setupForSubmit({ actions });
+            fireEvent.click(button);
+            await waitForElement(() => queryByText('size must be between 4 and 255'));
+            fireEvent.change(confirmInput, changeEvent("confirm password updated"));
+            const errorMessage = queryByText('size must be between 4 and 255');
+            expect(errorMessage).not.toBeInTheDocument();
         });
     });
 });
